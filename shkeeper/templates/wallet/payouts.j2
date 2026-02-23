@@ -1,0 +1,186 @@
+{% extends 'wallet/page.j2' %}
+
+{% block content %}
+
+
+<div class="content-container overflow-auto px-5 payouts-page">
+  <h1 class="title-text">Payouts</h1>
+
+  <div class="row">
+    <div class="common-text">
+      <div class="payouts-settings-table">
+
+        <div>
+          <p class="mb-1">Tx ID</p>
+          <div class="d-flex align-items-center flex-grow-1 pe-5">
+            <input
+              class="checkbox form-check-input me-2"
+              type="checkbox"
+              name="transactions"
+              checked
+            />
+            <input
+              class="form-control form-control-sm common-text"
+              type="text"
+              name="transactionID"
+              value=""
+            />
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center">
+          <input
+            class="checkbox form-check-input me-2"
+            type="checkbox"
+            name="crypto"
+            checked
+          />
+          <select
+            name="cryptoName"
+            class="form-select common-text transactions-select"
+          >
+            <option value="" disabled>Select crypto</option>
+            <option value="" selected>Any crypto</option>
+            {% for crypto in cryptos %}
+            <option value="{{crypto.value}}">{{crypto.label}}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        {# <div class="d-flex align-items-center">
+          <input
+            class="checkbox form-check-input me-2"
+            type="checkbox"
+            name="status"
+            checked
+          />
+          <select
+            name="statusName"
+            class="form-select common-text transactions-select"
+          >
+            <option value="" disabled>Select status</option>
+            <option value="" selected>Any status</option>
+            {% for status in payout_statuses %}
+                      <option value="{{status}}">{{status|replace("_", " ")|title}}</option>
+          {% endfor %}
+          </select>
+        </div> #}
+
+        <div>
+          <p class="mb-1">Destination address</p>
+          <div class="d-flex align-items-center flex-grow-1 pe-5">
+            <input
+            class="checkbox form-check-input me-2"
+            type="checkbox"
+            name="address"
+            checked
+            />
+            <input
+              class="transactions-address-input form-control form-control-sm common-text"
+              type="text"
+              name="address-input"
+              placeholder="Destination"
+            />
+          </div>
+        </div>
+
+        <div class="settings-confined">
+          <p class="mb-1">Payout date</p>
+          <div class="d-flex align-items-center pe-5">
+            <input
+            class="checkbox form-check-input me-2"
+            type="checkbox"
+            name="date"
+            checked
+            />
+            <input
+              class="form-control form-control-sm common-text"
+              type="date"
+              name="date-input"
+              placeholder="Invoice ID"
+            />
+          </div>
+        </div>
+
+
+        <div class="settings-daterange">
+          <input class="checkbox form-check-input me-2 d-none" type="checkbox" />
+          <p class="mb-1">Date range</p>
+          <div class="input-group">
+            <input id="daterange" name="daterange" class="form-control form-control-sm common-text" type="text"/>
+            <a id="report-download" class="btn btn-outline-secondary btn-outline-secondary__customization common-text accent-text">Download</a>
+          </div>
+        </div>
+
+        <div class="settings-confined">
+          <p class="mb-1">Payout amount (crypto)</p>
+          
+          <div class="d-flex align-items-center">
+            <input
+            class="checkbox form-check-input me-2"
+            type="checkbox"
+            name="amount"
+            checked
+            />
+            <input
+              class="form-control form-control-sm common-text"
+              type="text"
+              name="coinAmount"
+              placeholder="Amount"
+            />
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <div class="row overflow-auto">
+    <div class="col pt-4 transactions-table-wrapper">
+        <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
+            <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/custom-payouts.js') }}"></script>
+<script>document.getElementById("payouts-link").classList.add("nav-link--active");</script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/moment.min.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/daterangepicker.min.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/daterangepicker.' + theme + '.css') }}" />
+<script>
+  $(function () {
+    $('#daterange').daterangepicker({
+      locale: { cancelLabel: 'Clear' },
+      autoUpdateInput: false,
+      ranges: {
+        'Today': [moment(), moment()],
+        'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+        'This Month': [moment().startOf('month'), moment().endOf('month')],
+        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+      },
+      "alwaysShowCalendars": true,
+      "opens": "left"
+    }, function (start, end, label) {
+      $(this.element[0]).val(start.format('YYYY-MM-DD') + ' - ' + end.format('YYYY-MM-DD'));
+      this.element[0].dataset['from_date'] = start.format('YYYY-MM-DD');
+      this.element[0].dataset['to_date'] = end.format('YYYY-MM-DD');
+      update_tx_table();
+    });
+    $('#daterange').on('cancel.daterangepicker', function (ev, picker) {
+      $('#daterange').val('');
+      update_tx_table();
+    });
+  });
+</script>
+
+{% endblock %}

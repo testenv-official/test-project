@@ -1,0 +1,115 @@
+{% extends 'base.j2' %}
+
+{% block body %}
+    <div class="d-flex page-container">
+
+
+      <aside
+        data-menu
+        class="side-menu d-flex justify-content-between"
+      >
+
+        <div class="side-header">
+          <div class="theme-switch__box">
+            <input type="checkbox" id="themeSwitch" name="theme-switch" class="theme-switch__input" {{'checked' if theme == 'dark'}}/>
+                  <label for="themeSwitch" class="theme-switch__label">
+                  <span></span>
+                  </label>
+          </div>
+          <div class="arrow-button-wrapper w-100">
+            <button data-menu-button type="button" class="arrow-button btn">
+              <svg width="32" height="32" class="arrow">
+                <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-arrow"></use>
+              </svg>
+            </button>
+          </div>
+          
+          <button class="menu-close" data-menu-button aria-label="Close menu">
+            ✕
+          </button>
+        </div>
+
+        <nav>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a id="wallet-link" href="{{ url_for('wallet.wallets') }}" class="nav-link">
+                <svg height="32" width="32" class="nav-icon">
+                  <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-wallets"></use>
+                </svg>
+                <span class="nav-label">Wallets</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a id="rates-link" href="{{ url_for('wallet.list_rates') }}" class="nav-link">
+                <svg height="32" width="32" class="nav-icon">
+                  <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-source-rates"></use>
+                </svg>
+                <span class="nav-label">Source of rates</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a id="transactions-link" href="{{ url_for('wallet.transactions') }}" class="nav-link">
+                <svg height="32" width="32" class="nav-icon">
+                  <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-transactions"></use>
+                </svg>
+                <span class="nav-label">Transactions</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a id="payouts-link" href="{{ url_for('wallet.payouts') }}" class="nav-link">
+                <svg height="32" width="32" class="nav-icon">
+                  <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-payouts"></use>
+                </svg>
+                <span class="nav-label">Payouts</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a id="settings-link" href="{{ url_for('wallet.settings') }}" class="nav-link">
+                <svg height="32" width="32" class="nav-icon">
+                  <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-settings"></use>
+                </svg>
+                <span class="nav-label">Settings</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{{ url_for('auth.logout') }}" class="nav-link">
+                <svg height="32" width="32" class="nav-icon">
+                  <use href="{{ url_for('static', filename='images/icons.' + theme + '.svg') }}#menu-logout"></use>
+                </svg>
+                <span class="nav-label">Log out</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+        
+        <div class="logo-thumb">
+          <img
+            class="menu-logo-big menu-logo"
+            src="/static/images/shk-logo.{{theme}}.svg"
+            alt=""
+          />
+          <img
+            class="menu-logo-small menu-logo"
+            src="/static/images/shk-logo-short.{{theme}}.svg"
+            alt=""
+          />
+        </div>
+      </aside>
+
+      <div class="bottom-bar">
+          <img
+            class="bottom-bar-img"
+            width="70"
+            src="/static/images/shk-logo-short.{{theme}}.svg"
+            alt=""
+          />
+
+        <button class="bottom-bar__burger" data-menu-button aria-label="Open menu" > 
+          ☰
+        </button>
+      </div>
+
+	  {% block content %}{% endblock %}
+    </div>
+    <script src="{{ url_for('static', filename='js/mobile-menu.js') }}"></script>
+{% endblock %}

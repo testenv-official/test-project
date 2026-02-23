@@ -1,0 +1,2 @@
+class NotRelatedToAnyInvoice(Exception):
+    pass
